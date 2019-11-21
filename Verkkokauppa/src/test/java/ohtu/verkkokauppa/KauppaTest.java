@@ -95,5 +95,48 @@ public class KauppaTest {
         
         verify(pankki).tilisiirto("Uolevi", 42, "11111", "33333-44455", 10);
     }
+    
+    @Test
+    public void aloitaAsiointiNollaaEdellisenOstoksen() {
+        when(viite.uusi()).thenReturn(42);
+        
+        when(varasto.saldo(1)).thenReturn(10);
+        when(varasto.haeTuote(1)).thenReturn(new Tuote(1, "maito", 1));
+        when(varasto.haeTuote(2)).thenReturn(new Tuote(1, "juusto", 2));
+
+        
+        Kauppa k = new Kauppa(varasto, pankki, viite);              
+        
+        k.aloitaAsiointi();
+        k.lisaaKoriin(1);
+        k.tilimaksu("Uolevi", "11111");
+        
+        k.aloitaAsiointi();
+        k.lisaaKoriin(1);
+        k.tilimaksu("Uolevi", "11111");
+        
+        verify(pankki, times(2)).tilisiirto("Uolevi", 42, "11111", "33333-44455", 1);
+        
+    }
+    
+    @Test
+    public void tuotteenPoistaminen() {
+        when(viite.uusi()).thenReturn(42);
+        
+        when(varasto.saldo(1)).thenReturn(10);
+        when(varasto.haeTuote(1)).thenReturn(new Tuote(1, "maito", 5));
+        when(varasto.haeTuote(2)).thenReturn(new Tuote(1, "juusto", 2));
+
+        
+        Kauppa k = new Kauppa(varasto, pankki, viite);              
+        
+        k.aloitaAsiointi();
+        k.lisaaKoriin(1);
+        k.lisaaKoriin(2);
+        k.poistaKorista(2);
+        k.tilimaksu("Uolevi", "11111");
+        
+        verify(pankki).tilisiirto("Uolevi", 42, "11111", "33333-44455", 5);
+    }
 }
 
